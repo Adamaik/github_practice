@@ -13,7 +13,7 @@ public:
 	friend class myList<T>;
 	myListNode() :val(), next(nullptr) {}
 	myListNode(T x) :val(x), next(nullptr) {}
-	friend ostream& operator<< <T>(ostream&, myList<T>&);
+	friend ostream& operator<< <T>(ostream&,const myList<T>&);
 };
 
 template<class T>
@@ -21,10 +21,8 @@ class myList {
 private:
 	myListNode<T>* head;
 public:
-	myList() {
-		head = new myListNode<T>;
-	}
-	myList(T* inputs, int size) {
+	myList():head(nullptr) {}
+	myList(const T* inputs, int size) {
 		head = new myListNode<T>(inputs[0]);
 		myListNode<T>* ptr = head;
 		for (int i = 1; i < size; ++i) {
@@ -42,7 +40,7 @@ public:
 		}
 		delete now;
 	}
-	myList(myList& input) {
+	myList(const myList& input) {
 		head = new myListNode<T>(input.head->val);
 		myListNode<T>* ptr2 = input.head->next;
 		myListNode<T>* ptr1 = head;
@@ -54,9 +52,15 @@ public:
 	}
 
 	//=赋值
-	myList& operator=(myList& input) {
-		myList* tempList = new myList(input);
-		this->head = tempList->head;
+	myList& operator=(const myList& input) {
+		head = new myListNode<T>(input.head->val);
+		myListNode<T>* ptr2 = input.head->next;
+		myListNode<T>* ptr1 = head;
+		while (ptr2 != nullptr) {
+			ptr1->next = new myListNode<T>(ptr2->val);
+			ptr2 = ptr2->next;
+			ptr1 = ptr1->next;
+		}
 		return *this;
 	}
 
@@ -71,6 +75,10 @@ public:
 
 	//在末尾添加元素
 	myList& add(T input) {
+		if (!head) {
+			head = new myListNode<T>(input);
+			return *this;
+		}
 		myListNode<T>* ptr = head;
 		while (ptr->next != nullptr) {
 			ptr = ptr->next;
@@ -81,6 +89,14 @@ public:
 
 	//末尾删除元素
 	myList& pop() {
+		if (!head) {
+			throw out_of_range("列表为空，无法删除");
+		}
+		if (!(head->next)) {
+			delete head;
+			head = nullptr;
+			return *this;
+		}
 		myListNode<T>* ptr = head;
 		while (ptr->next->next != nullptr) {
 			ptr = ptr->next;
@@ -91,11 +107,11 @@ public:
 	}
 
 	//cout输出
-	friend ostream& operator<< <T>(ostream& , myList& );
+	friend ostream& operator<< <T>(ostream& , const myList& );
 };
 
 template<class T>
-ostream& operator<<(ostream& out, myList<T>& input) {
+ostream& operator<<(ostream& out, const myList<T>& input) {
 	out << "{ " << input.head->val;
 	myListNode<T>* ptr = input.head->next;
 	while (ptr != nullptr) {
@@ -109,20 +125,17 @@ ostream& operator<<(ostream& out, myList<T>& input) {
 
 //以下为调试代码
 
-//void memory_test() {
-//	int test[] = { 1,2,3,4,5,6,7 };
-//	myList<int>example(test, 7);
-//}
+
+myList<int> test() {
+	myList<int>test;
+	test.add(3).add(5).add(8);
+	return test;
+}
+
 
 int main() {
-	int test[] = { 1,2,3,4,5,6,7 };
-	myList<int>example1(test, 7);
-	myList<int>example2;
-	example2 = example1;
-	example2.add(187);
-	cout << example2[7] << endl;
-	example2.pop();
-	cout << example2[6] << endl;
-	cout << example2;
+
+	myList<int>test1;
+	test1= test();
 	return 0;
 }
